@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>篝火.</title>
+<link rel="icon" href="assets/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- design tokens ---------- */
+  :root{
+    --c-page:#F8F8F8;
+    --c-surface:#EDEDED;
+    --c-text:#222222;
+    --c-text-muted:#8A8A8A;
+    --c-placeholder:#D8D8D8;
+    --c-sotd:#CE6644;
+    --c-dev:#8EABC6;
+    --c-promoted-border:rgba(34,34,34,.3);
+
+    --container:1336px;
+    --gutter:52px;
+    --col-gap:20px;
+    --row-gap:30px;
+    --radius-sm:4px;
+    --radius-md:8px;
+
+    --font:"Inter","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--c-page);
+    color:var(--c-text);
+    font-family:var(--font);
+    font-size:13px;
+    line-height:1.4;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{display:block;max-width:100%}
+  button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+  a{color:inherit;text-decoration:none}
+  :focus-visible{outline:2px solid var(--c-text);outline-offset:2px;border-radius:2px}
+
+  .container{
+    width:100%;
+    max-width:calc(var(--container) + var(--gutter) * 2);
+    margin-inline:auto;
+    padding-inline:var(--gutter);
+  }
+  .visually-hidden{
+    position:absolute;width:1px;height:1px;margin:-1px;padding:0;
+    overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+  }
+
+  /* ---------- marquee ---------- */
+  .marquee{
+    height:50px;
+    background:var(--c-surface);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+  }
+  .marquee__track{
+    display:flex;
+    width:max-content;
+    animation:marquee-scroll 36s linear infinite;
+  }
+  .marquee:hover .marquee__track{animation-play-state:paused}
+  .marquee__item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:338px;
+    height:28px;
+    padding-inline:12px;
+    flex:0 0 auto;
+  }
+  .marquee__strong{font-size:14px;font-weight:600;line-height:28px;white-space:nowrap}
+  .marquee__text{font-size:14px;font-weight:300;line-height:28px;white-space:nowrap}
+  .marquee__ico{
+    width:16px;height:16px;
+    display:flex;align-items:center;justify-content:center;
+    flex:0 0 auto;
+  }
+  @keyframes marquee-scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
+
+  /* ---------- header ---------- */
+  .header-spacer{height:8px}
+  .header{
+    display:flex;
+    align-items:center;
+    gap:24px;
+    height:54px;
+    padding-inline:6px;
+  }
+  .header__left{
+    display:flex;
+    align-items:center;
+    gap:56px;
+    flex:0 1 489px;
+    min-width:0;
+  }
+  .logo{
+    display:flex;
+    align-items:center;
+    height:44px;
+    flex:0 0 auto;
+  }
+  /* ---------- campfire logo ----------
+     The logo is one flat PNG, so it is drawn three times and sliced with
+     vertical masks: the logs stay put, the flame sways above them, and the
+     spark on top twinkles on its own beat. Masks overlap enough that the
+     seams stay covered while the flame moves. */
+  .logo__mark{
+    position:relative;
+    width:40px;
+    height:40px;
+    flex:0 0 auto;
+  }
+  .logo__flame,
+  .logo__logs,
+  .logo__spark{
+    position:absolute;
+    inset:0;
+    background:url("assets/images/logo.png") center/contain no-repeat;
+  }
+  /* flame: from below the spark down to the seam line. The flame and logs
+     masks meet at exactly 70% with hard edges, so every pixel is painted by
+     one layer only and the resting state matches the original PNG. Both flame
+     transforms are anchored to that same line, so the seam never moves. */
+  .logo__flame{
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0 18%,#000 18% 70%,transparent 70%);
+    mask-image:linear-gradient(to bottom,transparent 0 18%,#000 18% 70%,transparent 70%);
+    transform-origin:50% 70%;
+    animation:logo-flame-breathe 1.15s ease-in-out infinite,
+              logo-flame-flicker .8s ease-in-out infinite;
+    will-change:transform,filter;
+  }
+  .logo__flame-sway{
+    position:absolute;
+    inset:0;
+    transform-origin:50% 70%;
+    animation:logo-flame-sway 2.6s ease-in-out infinite;
+  }
+  /* logs sit on top so the flame's lower edge is always covered */
+  .logo__logs{
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0 70%,#000 70% 100%);
+    mask-image:linear-gradient(to bottom,transparent 0 70%,#000 70% 100%);
+    animation:logo-logs-lit 1.9s ease-in-out infinite;
+  }
+  /* spark: dances like a small flame tongue rooted at the 18% seam. Pure
+     transform work — no opacity or filter — so its brightness always matches
+     the original PNG. */
+  .logo__spark{
+    -webkit-mask-image:linear-gradient(to bottom,#000 0 18%,transparent 18%);
+    mask-image:linear-gradient(to bottom,#000 0 18%,transparent 18%);
+    transform-origin:51% 18%;
+    animation:logo-spark .9s ease-in-out infinite;
+    will-change:transform;
+  }
+  .logo__glow{
+    position:absolute;
+    left:2px;right:2px;top:5px;bottom:8px;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(253,170,30,.45),rgba(253,120,10,.16) 45%,transparent 70%);
+    opacity:.7;
+    transition:opacity .35s ease;
+    animation:logo-glow 1.6s ease-in-out infinite;
+  }
+  .logo:hover .logo__glow{opacity:1}
+  .logo__ember{
+    position:absolute;
+    left:50%;
+    bottom:70%;
+    width:2px;height:2px;
+    border-radius:50%;
+    background:#FFB02E;
+    opacity:0;
+    --dx:3px;
+    animation:logo-ember 2.4s ease-out infinite;
+  }
+  .logo__ember--b{
+    left:44%;
+    width:1.5px;height:1.5px;
+    background:#FF7A28;
+    --dx:-3px;
+    animation-duration:2.9s;
+    animation-delay:.9s;
+  }
+  .logo__ember--c{
+    left:57%;
+    --dx:2px;
+    animation-duration:2.1s;
+    animation-delay:1.6s;
+  }
+  @keyframes logo-flame-sway{
+    0%{transform:skewX(0deg) translateX(0)}
+    18%{transform:skewX(-3.2deg) translateX(-.4px)}
+    38%{transform:skewX(1.8deg) translateX(.3px)}
+    56%{transform:skewX(3.4deg) translateX(.5px)}
+    74%{transform:skewX(-1.4deg) translateX(-.2px)}
+    100%{transform:skewX(0deg) translateX(0)}
+  }
+  @keyframes logo-flame-breathe{
+    0%{transform:scale(1,1)}
+    22%{transform:scale(.96,1.07)}
+    45%{transform:scale(1.03,.97)}
+    68%{transform:scale(.98,1.04)}
+    100%{transform:scale(1,1)}
+  }
+  @keyframes logo-flame-flicker{
+    0%,100%{filter:brightness(1) saturate(1)}
+    30%{filter:brightness(1.12) saturate(1.06)}
+    55%{filter:brightness(.94) saturate(.98)}
+    78%{filter:brightness(1.07) saturate(1.03)}
+  }
+  @keyframes logo-logs-lit{
+    0%,100%{filter:brightness(1)}
+    45%{filter:brightness(1.06)}
+  }
+  /* a flame tongue's jump: stretches up, leans to one side, then squats back.
+     Odd keyframe spacing keeps the beat from feeling mechanical. */
+  @keyframes logo-spark{
+    0%,100%{transform:translateY(0) scale(1,1) skewX(0deg)}
+    18%{transform:translateY(-.6px) scale(.92,1.16) skewX(-4deg)}
+    34%{transform:translateY(-.2px) scale(1.06,.96) skewX(3deg)}
+    52%{transform:translateY(-.9px) scale(.95,1.22) skewX(5deg)}
+    68%{transform:translateY(0) scale(1.08,.92) skewX(-2deg)}
+    84%{transform:translateY(-.4px) scale(.97,1.08) skewX(1.5deg)}
+  }
+  @keyframes logo-glow{
+    0%,100%{transform:scale(1);opacity:.62}
+    45%{transform:scale(1.1);opacity:.85}
+  }
+  @keyframes logo-ember{
+    0%{opacity:0;transform:translate(-50%,0) scale(.6)}
+    15%{opacity:1;transform:translate(-50%,-2px) scale(1)}
+    70%{opacity:.7;transform:translate(calc(-50% + var(--dx) * .6),-8px) scale(.8)}
+    100%{opacity:0;transform:translate(calc(-50% + var(--dx)),-13px) scale(.4)}
+  }
+  .logo__text{
+    font-size:20px;
+    font-weight:700;
+    line-height:24px;
+    padding-top:6px;
+    white-space:nowrap;
+  }
+  .search{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:1 1 auto;
+    min-width:0;
+    height:42px;
+    padding-inline:16px;
+    background:var(--c-surface);
+    border-radius:var(--radius-md);
+  }
+  .search__ico{width:13px;height:13px;flex:0 0 auto;color:var(--c-text)}
+  .search__input{
+    flex:1 1 auto;
+    min-width:0;
+    height:42px;
+    border:0;
+    background:transparent;
+    font:400 13px/42px var(--font);
+    color:var(--c-text);
+  }
+  .search__input::placeholder{color:var(--c-text);opacity:1}
+  .search__input:focus{outline:none}
+
+  /* ---------- filters ---------- */
+  .filters-spacer{height:10px}
+  /* 吸顶筛选栏。padding 给吸顶后的上下留白，等量负 margin 把它从文档流里
+     抵消掉，所以未滚动时的间距和原设计一致；背景铺 page 色，挡住从下面
+     滚过去的卡片。 */
+  .filters-bar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding-block:10px;
+    margin-block:-10px;
+    background:var(--c-page);
+  }
+  .filters{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    min-height:54px;
+    padding:6px;
+    background:var(--c-surface);
+    border-radius:var(--radius-md);
+  }
+  .filters__group{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    min-width:0;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .filters__group::-webkit-scrollbar{display:none}
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    height:42px;
+    padding-inline:24px;
+    background:var(--c-page);
+    border-radius:var(--radius-md);
+    font-size:13px;
+    font-weight:500;
+    line-height:28px;
+    white-space:nowrap;
+    flex:0 0 auto;
+    transition:background-color .18s ease;
+  }
+  .pill:hover{background:#fff}
+  /* Reset filters 走反色，和左侧一排模块 tab 区分开 */
+  .pill--reset{background:var(--c-text);color:#fff}
+  .pill--reset:hover{background:#000}
+  /* flex box, otherwise the inline svg sits on the text baseline and reads a
+     couple of px low against the pill's label */
+  .pill__ico{
+    width:14px;height:14px;
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* ---------- section title ---------- */
+  .title-spacer{height:40px}
+  .title-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    min-height:28px;
+  }
+  .title-row__left{display:flex;align-items:center;gap:6px;min-width:0}
+  .title{
+    margin:0;
+    font-size:14px;
+    font-weight:600;
+    line-height:18px;
+  }
+  .count-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    height:15px;
+    padding-inline:3px;
+    border:.5px solid var(--c-text);
+    border-radius:2px;
+    font-size:12px;
+    font-weight:300;
+    line-height:15px;
+    flex:0 0 auto;
+  }
+  .grid-toggles{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex:0 0 auto}
+  .grid-toggle{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    width:14px;
+    height:17px;
+  }
+  .grid-toggle__ico{width:13px;height:13px;color:var(--c-text);opacity:.45;transition:opacity .18s ease}
+  .grid-toggle__line{width:14px;height:1px;background:transparent;transition:background-color .18s ease}
+  .grid-toggle:hover .grid-toggle__ico{opacity:.75}
+  .grid-toggle[aria-pressed="true"] .grid-toggle__ico{opacity:1}
+  .grid-toggle[aria-pressed="true"] .grid-toggle__line{background:var(--c-text)}
+
+  /* ---------- card grid ---------- */
+  .grid-spacer{height:43px}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    align-items:start;
+    column-gap:var(--col-gap);
+    row-gap:var(--row-gap);
+  }
+  .grid[data-columns="4"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+  .card{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .card__figure{
+    position:relative;
+    aspect-ratio:432 / 324;
+    border-radius:var(--radius-sm);
+    overflow:hidden;
+    background:var(--c-surface);
+  }
+  .card__thumb{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform .5s cubic-bezier(.2,.6,.2,1);
+  }
+  .card:hover .card__thumb{transform:scale(1.03)}
+  .card__info{display:flex;flex-direction:column;gap:6px;min-width:0}
+  /* 28px is the design's fixed row height; the tallest child (22px tag) alone
+     would collapse it and shorten the whole card by 6px. */
+  .card__info-main{display:flex;align-items:center;gap:20px;min-height:28px;min-width:0}
+  .card__author{display:flex;align-items:center;gap:8px;flex:1 1 auto;min-width:0}
+  .card__avatar{
+    width:20px;height:20px;
+    flex:0 0 auto;
+    border-radius:50%;
+    overflow:hidden;
+    background:var(--c-placeholder);
+  }
+  .card__avatar img{width:100%;height:100%;object-fit:cover}
+  .card__name-wrap{display:flex;align-items:flex-start;gap:2px;min-width:0}
+  .card__name{
+    font-size:15px;
+    font-weight:600;
+    line-height:15px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .card__awards{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto}
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    height:22px;
+    padding-inline:4px;
+    border:.5px solid currentColor;
+    border-radius:var(--radius-sm);
+    font-size:11px;
+    font-weight:500;
+    line-height:18px;
+    white-space:nowrap;
+  }
+  .tag--dev{color:var(--c-dev)}
+  /* second tag in a pair, so two tags on one card read as distinct rather than
+     one long run of the same blue. Borrows the palette's warm accent. */
+  .tag--alt{color:var(--c-sotd)}
+  .tag--sotd{color:var(--c-sotd)}
+  .tag--promoted{color:var(--c-text);border-color:var(--c-promoted-border)}
+  .card__subtitle{
+    margin:0;
+    font-size:13px;
+    font-weight:400;
+    line-height:18px;
+    color:var(--c-text-muted);
+  }
+  .card--promoted .card__info{flex-direction:row;justify-content:flex-end;align-items:center;min-height:28px}
+
+  /* ---------- module panels ---------- */
+  /* 一次只显示一个模块，其余用 hidden 收起 */
+  .panel[hidden]{display:none}
+  .empty-state{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:180px;
+    margin:0;
+    background:var(--c-surface);
+    border-radius:var(--radius-sm);
+    color:var(--c-text-muted);
+    font-size:13px;
+    line-height:18px;
+  }
+  .pill[aria-current="page"]{background:#fff;font-weight:600}
+
+  .page-bottom{height:60px}
+
+  /* ---------- loader ----------
+     首屏加载动画：一次「蓄力 → 窜起喷火星 → 阻尼回弹」，然后交回 header 的
+     待机循环。
+
+     这里做了分层：柴堆（campfire-logs.png）全程静止，只有火焰
+     （campfire-flame.png）在动。两张图是把原图按图层拆出来的，共用 logo.png
+     的画布和位置，叠起来与原图逐像素一致；柴堆压在火焰之上，火焰根部约 14px
+     藏在它后面，所以火焰再怎么窜都不会露出根部的切口。
+
+     时间轴（总 1.2s）：
+       0   ~0.3s  蓄力：火焰压扁下沉，柴堆不动
+       0.3 ~0.7s  爆发：火焰窜起拉长，火星批量喷出
+       0.7 ~1.2s  回弹：两次阻尼衰减的上下震荡
+       1.2s       淡出，切回 header 的待机循环 */
+  .loader{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:grid;
+    place-items:center;
+    background:var(--c-page);
+    /* 等 1.2s 的整套动效跑完、火焰回到静止那一帧再淡出。此时它的形状和
+       header logo 的待机状态完全一致，所以交接看不出断点。 */
+    animation:loader-out .3s ease 1.2s forwards;
+  }
+  /* 舞台本身不做任何变换：柴堆要真正静止，所以动效全部下沉到火焰那一层 */
+  .loader__stage{
+    position:relative;
+    width:132px;
+    height:132px;
+  }
+  /* 分层：柴堆和火焰是两张各自独立的 PNG，不再靠遮罩去切一张平图。
+     两张图共用 logo.png 的画布与位置，所以叠起来和原图逐像素一致。
+     柴堆压在火焰之上，火焰根部约 14px（画布 10.5%）藏在柴堆后面，
+     因此火焰怎么窜动都不会露出根部的切口。 */
+  .loader__flame,
+  .loader__logs{
+    position:absolute;
+    inset:0;
+    background-position:center;
+    background-size:contain;
+    background-repeat:no-repeat;
+  }
+  /* 火焰：本次唯一有动效的一层 */
+  .loader__flame{
+    background-image:url("assets/images/campfire-flame.png");
+    transform-origin:50% 78%;   /* 锚在火焰根部，也就是被柴堆盖住那条线 */
+    animation:loader-flame 1.2s cubic-bezier(.33,0,.25,1) both;
+    will-change:transform;
+  }
+  /* 柴堆：静止不动，只负责盖住火焰根部 */
+  .loader__logs{
+    background-image:url("assets/images/campfire-logs.png");
+  }
+  /* 火光：铺在最底层（火焰之下），只是环境光，不会盖到静止的柴堆上 */
+  .loader__glow{
+    position:absolute;
+    left:8%;right:8%;top:14%;bottom:26%;
+    border-radius:50%;
+    background:radial-gradient(circle,rgba(253,170,30,.5),rgba(253,120,10,.18) 45%,transparent 70%);
+    animation:loader-glow 1.2s ease both;
+  }
+  /* 火星：爆发那一下一次性喷 5 个，各自的方向/距离/时长由变量错开，
+     所以看着像一把散开而不是队列。 */
+  .loader__embers{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+  .loader__ember{
+    position:absolute;
+    left:50%;
+    bottom:32%;
+    width:5px;height:5px;
+    border-radius:50%;
+    background:#FFB02E;
+    opacity:0;
+    --dx:0px;
+    --dy:-58px;
+    animation:loader-ember .62s cubic-bezier(.2,.5,.3,1) .3s both;
+  }
+  .loader__ember:nth-child(2){
+    left:38%;
+    width:4px;height:4px;
+    background:#FF7A28;
+    --dx:-26px;--dy:-46px;
+    animation-duration:.7s;
+    animation-delay:.32s;
+  }
+  .loader__ember:nth-child(3){
+    left:63%;
+    width:3.5px;height:3.5px;
+    --dx:24px;--dy:-52px;
+    animation-duration:.66s;
+    animation-delay:.31s;
+  }
+  .loader__ember:nth-child(4){
+    left:45%;
+    width:3px;height:3px;
+    background:#FF9A2E;
+    --dx:-12px;--dy:-70px;
+    animation-duration:.74s;
+    animation-delay:.34s;
+  }
+  .loader__ember:nth-child(5){
+    left:57%;
+    width:2.5px;height:2.5px;
+    background:#FF7A28;
+    --dx:14px;--dy:-64px;
+    animation-duration:.68s;
+    animation-delay:.36s;
+  }
+  /* 火焰：本次动效全在这一层。蓄力压扁 → 爆发窜起 → 两次衰减回弹，
+     锚点在被柴堆盖住的根部，所以纵向怎么拉伸都不会露出切口。 */
+  @keyframes loader-flame{
+    0%{transform:translateY(0) scale(1,1)}
+    25%{transform:translateY(3px) scale(1.08,.84)}     /* 蓄力：压扁下沉 */
+    42%{transform:translateY(-9px) scale(.93,1.34)}    /* 爆发：拉长窜起 */
+    58%{transform:translateY(-2px) scale(1.06,.95)}
+    72%{transform:translateY(-5px) scale(.97,1.11)}    /* 回弹 1 */
+    85%{transform:translateY(-1px) scale(1.02,.98)}
+    93%{transform:translateY(-2px) scale(.99,1.03)}    /* 回弹 2，幅度更小 */
+    100%{transform:translateY(0) scale(1,1)}
+  }
+  @keyframes loader-glow{
+    0%{transform:scale(.9);opacity:.5}
+    25%{transform:scale(.82);opacity:.42}
+    42%{transform:scale(1.28);opacity:.95}
+    62%{transform:scale(1.02);opacity:.66}
+    100%{transform:scale(1);opacity:.62}
+  }
+  /* 火星：喷出后向上四散，边飘边缩边淡 */
+  @keyframes loader-ember{
+    0%{opacity:0;transform:translate(-50%,0) scale(.5)}
+    18%{opacity:1;transform:translate(calc(-50% + var(--dx) * .25),calc(var(--dy) * .3)) scale(1)}
+    70%{opacity:.7;transform:translate(calc(-50% + var(--dx) * .78),calc(var(--dy) * .78)) scale(.72)}
+    100%{opacity:0;transform:translate(calc(-50% + var(--dx)),var(--dy)) scale(.34)}
+  }
+  @keyframes loader-out{
+    to{opacity:0;visibility:hidden}
+  }
+  /* 动画跑完后由脚本摘掉；脚本没跑起来时这条兜底，避免遮住整页 */
+  .loader--done{display:none}
+  /* 加载期间锁滚动，动画结束即恢复 */
+  .is-loading{overflow:hidden}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:1439px){
+    :root{--gutter:32px}
+  }
+  @media (max-width:1199px){
+    :root{--gutter:24px;--row-gap:28px}
+    .grid,.grid[data-columns="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .header__left{flex:0 1 auto;gap:24px}
+    .grid-toggles{display:none}
+  }
+  @media (max-width:767px){
+    :root{--gutter:16px;--col-gap:16px;--row-gap:24px}
+    .header{flex-wrap:wrap;height:auto;gap:12px;padding-block:8px}
+    .header__left{flex:1 1 100%}
+    .search{flex:1 1 100%}
+    .title-spacer{height:28px}
+    .grid-spacer{height:24px}
+    .grid,.grid[data-columns="4"]{grid-template-columns:minmax(0,1fr)}
+    .marquee__item{width:auto}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .marquee__track{animation:none}
+    .card__thumb{transition:none}
+    .card:hover .card__thumb{transform:none}
+    .logo__flame,.logo__flame-sway,.logo__logs,.logo__spark,.logo__glow{animation:none}
+    .logo__ember{display:none}
+    /* 窜动与火星是纯装饰，直接不播；遮罩层只做一次淡出，不让它一直挡着页面 */
+    .loader__stage,.loader__flame,.loader__glow{animation:none}
+    .loader__embers{display:none}
+    .loader{animation:loader-out .2s ease .1s forwards}
+  }
+</style>
+</head>
+<body class="is-loading">
+
+<!-- ===== loader =====
+     首屏一次性的篝火窜火。aria-hidden + role=status 上的文案让读屏软件知道
+     在加载，而不去念这堆纯装饰的层。 -->
+<div class="loader" id="loader">
+  <span class="visually-hidden" role="status">正在加载</span>
+  <div class="loader__stage" aria-hidden="true">
+    <span class="loader__glow"></span>
+    <!-- 顺序即层级：火焰在下，柴堆压在它上面盖住根部 -->
+    <span class="loader__flame"></span>
+    <span class="loader__logs"></span>
+    <span class="loader__embers">
+      <span class="loader__ember"></span>
+      <span class="loader__ember"></span>
+      <span class="loader__ember"></span>
+      <span class="loader__ember"></span>
+      <span class="loader__ember"></span>
+    </span>
+  </div>
+</div>
+
+<!-- ===== marquee ===== -->
+<div class="marquee" aria-label="站点标语">
+  <div class="marquee__track" id="marqueeTrack">
+    <!-- marquee items are duplicated by script for a seamless loop -->
+    <div class="marquee__item">
+      <span class="marquee__strong">campfire</span>
+      <span class="marquee__ico" aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" focusable="false">
+          <!-- Outer flame with an inner flame cut out; fill-rule makes the
+               second subpath a hole. Traced from the design's 14x16 icon. -->
+          <path fill="currentColor" fill-rule="evenodd" d="M6.7 0.4C7.5 0.3 8.4 2.2 9.1 2.5C9.9 2.7 10.4 1.6 11.1 2.1C11.9 2.6 13 4.3 13.6 5.6C14.1 6.8 14.5 8.1 14.5 9.5C14.4 10.8 14 12.5 13.2 13.5C12.5 14.5 11.3 15.3 10.1 15.6C9 16 7.4 15.9 6.3 15.6C5.1 15.4 4 14.9 3.2 14C2.4 13.1 1.7 11.5 1.5 10.2C1.3 8.9 1.7 7.5 2.1 6.2C2.5 4.9 3.3 3.6 4 2.6C4.8 1.6 5.8 0.4 6.7 0.4ZM6.6 7C6.2 7 5.7 7.6 5.4 8.1C5.1 8.7 4.8 9.6 4.8 10.3C4.8 11 5.1 11.8 5.6 12.3C6.1 12.7 7.1 13 7.8 13C8.4 13 9.2 12.7 9.7 12.4C10.3 12 10.9 11.6 11 11C11.2 10.4 11 9.2 10.8 8.8C10.7 8.4 10.4 8.6 10.1 8.7C9.8 8.8 9.5 9.6 9.1 9.5C8.7 9.4 8.3 8.6 7.9 8.1C7.5 7.7 7 7 6.6 7Z"/>
+        </svg>
+      </span>
+      <span class="marquee__text">All great ideas start with a spark.</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== header ===== -->
+<div class="header-spacer"></div>
+<header class="container">
+  <div class="header">
+    <div class="header__left">
+      <a class="logo" href="#" aria-label="篝火 首页">
+        <span class="logo__mark" role="img" aria-label="篝火图标">
+          <span class="logo__glow" aria-hidden="true"></span>
+          <span class="logo__flame-sway" aria-hidden="true"><span class="logo__flame"></span></span>
+          <span class="logo__logs" aria-hidden="true"></span>
+          <span class="logo__spark" aria-hidden="true"></span>
+          <span class="logo__ember" aria-hidden="true"></span>
+          <span class="logo__ember logo__ember--b" aria-hidden="true"></span>
+          <span class="logo__ember logo__ember--c" aria-hidden="true"></span>
+        </span>
+        <span class="logo__text">篝火.</span>
+      </a>
+    </div>
+    <form class="search" role="search" onsubmit="return false">
+      <span class="search__ico" aria-hidden="true">
+        <svg viewBox="0 0 13 13" width="13" height="13" fill="none">
+          <circle cx="5.4" cy="5.4" r="4.65" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M8.9 8.9l3.4 3.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <label class="visually-hidden" for="searchInput">搜索火花</label>
+      <input class="search__input" id="searchInput" type="search" placeholder="搜索火花" autocomplete="off">
+    </form>
+  </div>
+</header>
+
+<!-- ===== filters ===== -->
+<div class="filters-spacer"></div>
+<nav class="container filters-bar" aria-label="灵感分类">
+  <div class="filters">
+    <!-- 模块切换：href 指向对应 panel，脚本接管后只显示被选中的那个 -->
+    <div class="filters__group" id="moduleTabs">
+      <a class="pill" href="#inspiration" aria-current="page">灵感创意集</a>
+      <a class="pill" href="#museum">名画博物馆</a>
+      <a class="pill" href="#animation">动画灵感</a>
+      <a class="pill" href="#aigc">AIGC 工具库</a>
+      <a class="pill" href="#markdown">Markdown 技能手册</a>
+      <a class="pill" href="#fonts">字体下载</a>
+      <a class="pill" href="#palette">配色方案</a>
+      <a class="pill" href="#remake">创意网站复刻源</a>
+      <a class="pill" href="#components">网站组件来源</a>
+    </div>
+    <div class="filters__group">
+      <button class="pill pill--reset" type="button">
+        Reset filters
+        <span class="pill__ico" aria-hidden="true">
+          <svg viewBox="0 0 14 14" width="14" height="14" fill="none">
+            <path d="M12.3 7a5.3 5.3 0 1 1-1.6-3.8" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+            <path d="M12.5 1.2v2.8H9.7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== module: 灵感创意集 ===== -->
+<main>
+<section class="panel" id="inspiration" aria-labelledby="inspiration-title">
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h1 class="title" id="inspiration-title">灵感不是凭空出现的一束光，而是一堆被不断添柴、碰撞、传递，最终燃起来的火</h1>
+      <span class="count-badge">6</span>
+    </div>
+    <!-- 单一实例，切换模块时由脚本移入当前面板的标题行 -->
+    <div class="grid-toggles" id="gridToggles" role="group" aria-label="切换每行卡片数量">
+      <button class="grid-toggle" type="button" data-columns="3" aria-pressed="true" aria-label="每行 3 个">
+        <span class="grid-toggle__ico" aria-hidden="true">
+          <svg viewBox="0 0 13 13" width="13" height="13" fill="none">
+            <rect x="1.1" y="1.1" width="2.6" height="10.8" fill="currentColor"/>
+            <rect x="5.2" y="1.1" width="2.6" height="10.8" fill="currentColor"/>
+            <rect x="9.3" y="1.1" width="2.6" height="10.8" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="grid-toggle__line"></span>
+      </button>
+      <button class="grid-toggle" type="button" data-columns="4" aria-pressed="false" aria-label="每行 4 个">
+        <span class="grid-toggle__ico" aria-hidden="true">
+          <svg viewBox="0 0 13 13" width="13" height="13" fill="none">
+            <rect x="1.1" y="1.1" width="1.9" height="10.8" fill="currentColor"/>
+            <rect x="4.1" y="1.1" width="1.9" height="10.8" fill="currentColor"/>
+            <rect x="7.1" y="1.1" width="1.9" height="10.8" fill="currentColor"/>
+            <rect x="10.1" y="1.1" width="1.9" height="10.8" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="grid-toggle__line"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://www.pinterest.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/pinterest.jpg" alt="pinterest 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/pinterest.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">pinterest</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">灵感</span>
+            <span class="tag tag--alt">创意</span>
+          </div>
+        </div>
+        <p class="card__subtitle">全球最大的创意灵感图片分享网站</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://dribbble.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/dribbble.jpg" alt="dribbble 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/dribbble.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">dribbble</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">设计师必备站点，国内顶尖的设计师都在上面</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://huaban.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/huaban.jpg" alt="花瓣 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/huaban.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">花瓣</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">灵感</span>
+            <span class="tag tag--alt">创意</span>
+          </div>
+        </div>
+        <p class="card__subtitle">采集你喜欢的美好事物，发现新知，启发设计灵感</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.behance.net/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/behance.jpg" alt="behance 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/behance.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">behance</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">全球领先的创意设计类聚合平台</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.zcool.com.cn/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/zcool.jpg" alt="站酷 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/zcool.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">站酷</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">灵感</span>
+            <span class="tag tag--alt">创意</span>
+          </div>
+        </div>
+        <p class="card__subtitle">综合性设计分享网站，原创设计交流平台</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://mobbin.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/mobbin.jpg" alt="mobbin 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/mobbin.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">mobbin</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">灵感</span>
+          </div>
+        </div>
+        <p class="card__subtitle">推荐！UI设计师必备灵感库，帮你快速找到参考</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== module: 名画博物馆 ===== -->
+<section class="panel" id="museum" aria-labelledby="museum-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="museum-title">名画博物馆 · 把千年的笔触摊开在眼前，供你随手取一束光</h2>
+      <span class="count-badge">4</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://www.dpm.org.cn/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/dpm.jpg" alt="故宫博物院 数字文物库预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/dpm.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">故宫博物院</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">中国古画</span>
+            <span class="tag tag--alt">宫廷艺术</span>
+          </div>
+        </div>
+        <p class="card__subtitle">“数字文物库”适合专门浏览高清数字藏品</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://artsandculture.google.com/explore" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/google-arts.jpg" alt="Google Arts &amp; Culture 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/google-arts.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Google Arts &amp; Culture</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">世界名画</span>
+          </div>
+        </div>
+        <p class="card__subtitle">世界艺术总入口</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.metmuseum.org/zh" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/met.jpg" alt="The Met Collection 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/met.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">The Met Collection</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">大都会</span>
+            <span class="tag tag--alt">高清馆藏</span>
+          </div>
+        </div>
+        <p class="card__subtitle">跨越约 5000 年艺术史，在线馆藏超过 49 万件</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://collections.louvre.fr/en/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/louvre.jpg" alt="Louvre 馆藏预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar" aria-hidden="true"></span>
+            <span class="card__name-wrap"><span class="card__name">Louvre</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">卢浮宫</span>
+            <span class="tag tag--alt">文艺复兴</span>
+          </div>
+        </div>
+        <p class="card__subtitle">顶级经典名作与古典艺术</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== module: 动画灵感 =====
+     表格「动画灵感（含可复用资源）」16 条，含素材站与可直接取用的代码组件库。 -->
+<section class="panel" id="animation" aria-labelledby="animation-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="animation-title">动画灵感 · 会动的那一下，才是界面开始说话的地方</h2>
+      <span class="count-badge">16</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://rive.app/marketplace/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/rive.jpg" alt="Rive 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/rive.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Rive</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">交互动效社区</span>
+          </div>
+        </div>
+        <p class="card__subtitle">汇集可交互的角色、界面和场景动画，帮助设计师寻找灵感、探索可复用作品并联系创作者。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://iconscout.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/iconscout.jpg" alt="IconScout 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/iconscout.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">IconScout</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">综合设计素材平台</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供图标、插画、3D 和 Lottie 素材，帮助设计师为界面、演示与营销内容快速匹配视觉资源。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.morphicons.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/morphicons.jpg" alt="morphicons 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/morphicons.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">morphicons</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">图标变形代码库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">让 SVG 图标在不同操作状态之间平滑变形，为按钮、菜单和功能反馈提供连贯自然的过渡。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://lordicon.com/icons/all#i:system-outline-54-image-mountain;f:1" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/lordicon.jpg" alt="lordicon 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/lordicon.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">lordicon</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">动态图标素材平台</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供风格统一、可调整配色的动态图标，为网页、App 和演示内容增添清晰的操作反馈。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://remocn.dev/docs/typography" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/remocn.jpg" alt="Remocn 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/remocn.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Remocn</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">视频动效代码组件库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供可修改的 Remotion 动效组件，将文字、转场、图表和界面场景组合为产品演示视频。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://amicro.vercel.app/cards" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/amicro.jpg" alt="Amicro 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/amicro.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Amicro</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">网页交互动效组件库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供可复用的网页微交互组件，帮助开发者实现按钮反馈、卡片切换和立体翻页等细腻动效</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://lottiefiles.com/free-animations" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/lottie.jpg" alt="Lottie 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/lottie.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Lottie</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">轻量动画素材社区</span>
+          </div>
+        </div>
+        <p class="card__subtitle">汇集可预览和下载的轻量动画素材，为网页、App 和设计原型提供状态反馈与动态插画。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.loading-ui.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/loading-ui.jpg" alt="Loading-ui 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/loading-ui.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Loading-ui</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">加载状态代码组件库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供可直接接入网页的加载动效组件，为页面等待、按钮处理和 AI 响应呈现清晰的状态反馈。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://libraries.dev/orbs" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/libraries-dev.jpg" alt="libraries.dev 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/libraries-dev.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">libraries.dev</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面动效组件库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供可定制的界面动效组件，涵盖流光边框、黏性融合、液态金属与状态反馈，支持通过 AI 编程工具接入产品。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://reactbits.dev/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/reactbits.jpg" alt="reactbits 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/reactbits.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">reactbits</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">创意前端动效组件库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供视觉表现丰富的 React 动效组件，帮助品牌网页和作品集实现动态背景、文字与交互效果。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://uiverse.io/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/uiverse-anim.jpg" alt="uiverse 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/uiverse-anim.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">uiverse</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">社区 UI 代码资源库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">汇集社区制作的 UI 组件代码，帮助设计师和开发者快速选用按钮、卡片、表单与加载样式。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://uiball.com/ldrs/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/ui-ball.jpg" alt="UI Ball 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/ui-ball.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">UI Ball</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">轻量加载动画代码库</span>
+          </div>
+        </div>
+        <p class="card__subtitle">简洁轻量的加载动画代码，帮助网页和工具产品在等待过程中保持清楚、一致的视觉反馈。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://css-loaders.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/css-loaders.jpg" alt="CSS Loaders 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/css-loaders.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">CSS Loaders</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">纯 CSS 加载效果集合</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供多种可复制的纯 CSS 加载效果，适合为网页和 H5 快速加入圆点、条形及旋转等待动画。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://animatedicons.co/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/animated-icons.jpg" alt="Animated Icons 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/animated-icons.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Animated Icons</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">动态图标素材平台</span>
+          </div>
+        </div>
+        <p class="card__subtitle">提供可预览和调整配色的动态图标，为产品界面、演示和功能说明增加生动的状态表达。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://gsap.com/showcase/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/gsap-showcase.jpg" alt="GSAP Showcase 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/gsap-showcase.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">GSAP Showcase</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">优秀动效网站案例集</span>
+          </div>
+        </div>
+        <p class="card__subtitle">精选具有创意动效的真实网站，帮助设计师研究滚动叙事、页面转场与鼠标交互的实现方向。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://tympanus.net/codrops/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/codrops.jpg" alt="Codrops 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/codrops.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Codrops</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">创意前端教程与实验平台</span>
+          </div>
+        </div>
+        <p class="card__subtitle">分享创意前端教程与交互实验，帮助设计师和开发者探索图片切换、WebGL 与新颖网页表现。</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== module: AIGC 工具库 ===== -->
+<section class="panel" id="aigc" aria-labelledby="aigc-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="aigc-title">AIGC 工具库</h2>
+      <span class="count-badge">0</span>
+    </div>
+  </div>
+</div>
+<div class="grid-spacer"></div>
+<div class="container">
+  <p class="empty-state">表格中该模块尚未填写内容</p>
+</div>
+</section>
+
+<!-- ===== module: Markdown 技能手册 =====
+     表格「Markdown技能手册」3 条：Agent Skills 的收录站、精选站与搜索引擎。 -->
+<section class="panel" id="markdown" aria-labelledby="markdown-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="markdown-title">Markdown 技能手册 · 把你交代过无数遍的做法，写成一份它照着走的说明</h2>
+      <span class="count-badge">3</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://www.skills.sh/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/skills-sh.jpg" alt="Skills.sh 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/skills-sh.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Skills.sh</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">热门 Skill</span>
+            <span class="tag tag--alt">趋势榜</span>
+          </div>
+        </div>
+        <p class="card__subtitle">Agent Skills 大目录</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://agenticskills.io/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/agenticskills.jpg" alt="AgenticSkills 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/agenticskills.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">AgenticSkills</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">高质量</span>
+          </div>
+        </div>
+        <p class="card__subtitle">人工精选 Skill + Workflow</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://skillsmp.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/skillsmp.jpg" alt="SkillsMP 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/skillsmp.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">SkillsMP</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">冷门 Skill</span>
+            <span class="tag tag--alt">冷门宝藏</span>
+          </div>
+        </div>
+        <p class="card__subtitle">SKILL.md 搜索引擎</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== module: 字体下载 ===== -->
+<section class="panel" id="fonts" aria-labelledby="fonts-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="fonts-title">字体下载</h2>
+      <span class="count-badge">0</span>
+    </div>
+  </div>
+</div>
+<div class="grid-spacer"></div>
+<div class="container">
+  <p class="empty-state">表格中该模块尚未填写内容</p>
+</div>
+</section>
+
+<!-- ===== module: 配色方案 ===== -->
+<section class="panel" id="palette" aria-labelledby="palette-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="palette-title">配色方案</h2>
+      <span class="count-badge">0</span>
+    </div>
+  </div>
+</div>
+<div class="grid-spacer"></div>
+<div class="container">
+  <p class="empty-state">表格中该模块尚未填写内容</p>
+</div>
+</section>
+
+<!-- ===== module: 创意网站复刻源 ===== -->
+<section class="panel" id="remake" aria-labelledby="remake-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="remake-title">创意网站复刻源 · 把别人做到位的那一版，拆开看清楚</h2>
+      <span class="count-badge">5</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://mobbin.com/discover/apps/web/latest" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/mobbin-remake.jpg" alt="Mobbin 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/mobbin-remake.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Mobbin</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">收录 1000+ 款 iOS/Android/Web 应用、60 万 + 界面截图、13 万 + 用户流程，每周更新。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.awwwards.com/websites/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/awwwards.jpg" alt="Awwwards 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/awwwards.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Awwwards</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">网页设计界的奥斯卡」。2009 年创立于西班牙，全球最大网页设计奖项社区：每日评选 Site of the Day，逐级角逐月度、年度大奖，国际评委 + 社区投票双评分，按创意 / UI / UX / 动效维度评审。适合设计师、前端、创意机构。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://motionsites.ai/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/motionsites.jpg" alt="Motionsites 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/motionsites.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Motionsites</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">AI Vibe Coding 的「设计 Prompt 资源库」，专治 AI 生成的网站「有 AI 味」。500+ 精选 Prompt 覆盖 19+ 品类，一键复制完整规格粘贴到 Cursor、Lovable、Bolt、Claude 即可复现。适合 AI 编程开发者、独立创业者。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://21st.dev/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/21st.jpg" alt="21st 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/21st.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">21st</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">由 Theo Browne（t3.gg，tRPC 作者）创立的 AI 驱动 React 组件库平台，slogan 是 &quot;Crafted React components that fight AI slop&quot;（专治 AI 生成代码的 AI 味）。可用 Web 界面或 MCP server 让 Cursor、Claude Code、v0、Lovable 直接搜索、安装、生成 UI，也支持 21st generate 命令一条提示词草拟多套方案。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://variant.com/community" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/variant.jpg" alt="Variant 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/variant.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Variant</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">界面设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">AI UI 设计探索工具，前 Postmates VP Ben South 创立。输入一个想法即无限滚动生成 UI 方案流；可导出 HTML/React 代码。</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+
+<!-- ===== module: 网站组件来源 ===== -->
+<section class="panel" id="components" aria-labelledby="components-title" hidden>
+<div class="title-spacer"></div>
+<div class="container">
+  <div class="title-row">
+    <div class="title-row__left">
+      <h2 class="title" id="components-title">网站组件来源 · 现成的零件，省下从零画一遍的时间</h2>
+      <span class="count-badge">6</span>
+    </div>
+  </div>
+</div>
+
+<div class="grid-spacer"></div>
+<div class="container">
+  <div class="grid" data-columns="3">
+
+    <article class="card">
+      <a class="card__figure" href="https://ui.shadcn.com/docs/components/base/alert" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/shadcn-ui.jpg" alt="Shadcn UI 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/shadcn-ui.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">Shadcn UI</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">shadcn/ui 是一套设计精美、易于使用的组件和一个代码分发平台。它与您喜爱的框架和 AI 模型兼容。开源，代码开放。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://vue-bits.dev/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/vue-bits.jpg" alt="vue-bits 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/vue-bits.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">vue-bits</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">面向创意开发者的Vue 组件。高度可定制的动画组件和背景，可轻松添加到您的项目中，立即使其脱颖而出。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://skiper-ui.com/" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/skiper-ui.jpg" alt="skiper-ui 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/skiper-ui.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">skiper-ui</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">一系列开箱即用的组件</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://www.goodcomponents.io/browse" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/goodcomponents.jpg" alt="goodcomponents 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/goodcomponents.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">goodcomponents</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">寻找灵感？浏览goodcomponents精心策划的HTMLUI组件集合，随时可融入您的下一个项目。</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://inspira-ui.com/docs/en/components/backgrounds/aurora-background" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/inspira-ui.jpg" alt="inspira-ui 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/inspira-ui.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">inspira-ui</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">预览动画效果 → 调整参数 → 复制源文件</p>
+      </div>
+    </article>
+
+    <article class="card">
+      <a class="card__figure" href="https://uiverse.io/tooltips" target="_blank" rel="noopener"><img class="card__thumb" src="assets/images/previews/uiverse.jpg" alt="uiverse 站点预览" loading="lazy"></a>
+      <div class="card__info">
+        <div class="card__info-main">
+          <div class="card__author">
+            <span class="card__avatar"><img src="assets/images/avatars/uiverse.png" alt="" loading="lazy"></span>
+            <span class="card__name-wrap"><span class="card__name">uiverse</span></span>
+          </div>
+          <div class="card__awards">
+            <span class="tag tag--dev">组件设计</span>
+          </div>
+        </div>
+        <p class="card__subtitle">开源用户界面库、UI 元素库。可复制为 HTML/CSS、Tailwind、React 和 Figma 格式。</p>
+      </div>
+    </article>
+
+  </div>
+</div>
+</section>
+</main>
+<div class="page-bottom"></div>
+
+<script>
+  // Loader teardown. The whole sequence is CSS, so this only has to clear the
+  // overlay once it has faded and give the scroll back. Driven by animationend
+  // on the fade rather than a timer, so the two can't drift; the timeout is the
+  // fallback for a browser that never fires it (or a tab backgrounded mid-run).
+  (function () {
+    var loader = document.getElementById('loader');
+    if (!loader) { document.body.classList.remove('is-loading'); return; }
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      loader.classList.add('loader--done');
+      document.body.classList.remove('is-loading');
+    }
+    loader.addEventListener('animationend', function (e) {
+      // only the overlay's own fade ends the loader, not the flame's bounce
+      if (e.target === loader) finish();
+    });
+    setTimeout(finish, 2200);
+  })();
+
+  // Marquee: the design repeats one phrase 5 times per screen width. Build two
+  // identical halves so the -50% keyframe loops without a visible seam.
+  (function () {
+    var ITEMS_PER_HALF = 5;
+    var track = document.getElementById('marqueeTrack');
+    var seed = track && track.firstElementChild;
+    if (!seed) return;
+    var frag = document.createDocumentFragment();
+    for (var i = 1; i < ITEMS_PER_HALF * 2; i++) frag.appendChild(seed.cloneNode(true));
+    track.appendChild(frag);
+  })();
+
+  // Module switcher: the pills act as tabs over .panel sections, so only one
+  // module's cards are in view at a time. The hash keeps a module linkable and
+  // survives reload; without JS every panel except the first stays hidden, so
+  // the pill still works as a plain in-page anchor.
+  (function () {
+    var tabs = document.getElementById('moduleTabs');
+    if (!tabs) return;
+    var pills = tabs.querySelectorAll('.pill[href^="#"]');
+    var panels = document.querySelectorAll('.panel');
+    if (!pills.length || !panels.length) return;
+
+    // One toggle group for the whole page; it follows the active panel so the
+    // control sits on that panel's title row instead of being duplicated.
+    var toggles = document.getElementById('gridToggles');
+
+    function show(id) {
+      var matched = null;
+      Array.prototype.forEach.call(panels, function (panel) {
+        var on = panel.id === id;
+        panel.hidden = !on;
+        if (on) matched = panel;
+      });
+      if (matched && toggles) {
+        // Only panels that actually have cards get the density control.
+        var row = matched.querySelector('.grid') ? matched.querySelector('.title-row') : null;
+        if (row) row.appendChild(toggles);
+        toggles.hidden = !row;
+      }
+      Array.prototype.forEach.call(pills, function (pill) {
+        var on = pill.getAttribute('href').slice(1) === id;
+        if (on) pill.setAttribute('aria-current', 'page');
+        else pill.removeAttribute('aria-current');
+      });
+      return !!matched;
+    }
+
+    Array.prototype.forEach.call(pills, function (pill) {
+      pill.addEventListener('click', function (e) {
+        var id = pill.getAttribute('href').slice(1);
+        if (!document.getElementById(id)) return;
+        e.preventDefault();
+        show(id);
+        // Update the hash without the jump a default anchor click would cause.
+        if (window.history && history.replaceState) history.replaceState(null, '', '#' + id);
+        else window.location.hash = id;
+      });
+    });
+
+    window.addEventListener('hashchange', function () {
+      show(window.location.hash.slice(1)) || show(panels[0].id);
+    });
+
+    // Honour a deep link like index.html#museum on first paint.
+    var initial = window.location.hash.slice(1);
+    if (!initial || !show(initial)) show(panels[0].id);
+  })();
+
+  // Grid density toggle (3 / 4 columns). Applies to every panel's grid so the
+  // page keeps one consistent rhythm as you switch modules.
+  (function () {
+    var grids = document.querySelectorAll('.grid');
+    var buttons = document.querySelectorAll('.grid-toggle');
+    if (!grids.length || !buttons.length) return;
+    Array.prototype.forEach.call(buttons, function (btn) {
+      btn.addEventListener('click', function () {
+        Array.prototype.forEach.call(grids, function (grid) {
+          grid.dataset.columns = btn.dataset.columns;
+        });
+        Array.prototype.forEach.call(buttons, function (other) {
+          other.setAttribute('aria-pressed', String(other === btn));
+        });
+      });
+    });
+  })();
+</script>
+</body>
+</html>
